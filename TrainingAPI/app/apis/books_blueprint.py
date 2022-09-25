@@ -55,11 +55,11 @@ async def add_book(request, username=None):
     return json({'status': 'success'})
 
 
-# TODO: write api get, update, delete book
-@books_bp.route('/', methods={'GET'})
-async def get_book(request, username=None):
-    book = _db.get_books().to_dict()
-    return json(book)
+# # TODO: write api get, update, delete book
+# @books_bp.route('/', methods={'GET'})
+# async def get_book(request, username=None):
+#     book = _db.get_books().to_dict()
+#     return json(book)
 
 
 @books_bp.route('/', methods={'PUT'})
@@ -82,7 +82,7 @@ async def update_book(request, username=None):
     return json({'status': 'success'})
 
 
-@books_bp.route('/', methods={'POST'})
+@books_bp.route('/', methods={'DELETE'})
 # @protected  # TODO: Authenticate
 @validate_with_jsonschema(create_book_json_schema)  # To validate request body
 async def delete_book(request, username=None):
