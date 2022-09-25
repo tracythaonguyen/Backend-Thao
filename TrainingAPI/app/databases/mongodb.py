@@ -60,10 +60,7 @@ class MongoDB:
             if not filter_:
                 filter_ = {}
             cursor = self._books_col.delete_one(filter_)
-            data = []
-            for doc in cursor:
-                data.append(Book().from_dict(doc))
-            return data
+            return None
         except Exception as ex:
             logger.exception(ex)
-        return []
+        return None
