@@ -42,18 +42,26 @@ class MongoDB:
         return None
 
     # TODO: write functions CRUD with books
-    def update_book(self, filter_, update_operation):
+    def get_book(self, filter_):
         try:
-            update_doc = self._books_col.update_one({filter_}, {update_operation})
-            return update_doc
+            got_doc = self._books_col.find_one(filter_)
+            return got_doc
         except Exception as ex:
             logger.exception(ex)
-        return None
+        return []
+
+    def update_book(self, filter_, update_operation):
+        try:
+            updated_doc = self._books_col.update_one({filter_}, {update_operation})
+            return updated_doc
+        except Exception as ex:
+            logger.exception(ex)
+        return []
 
     def delete_book(self, filter_=None):
         try:
-            delete_doc = self._books_col.delete_one(filter_)
-            return delete_doc
+            deleted_doc = self._books_col.delete_one(filter_)
+            return deleted_doc
         except Exception as ex:
             logger.exception(ex)
         return None
