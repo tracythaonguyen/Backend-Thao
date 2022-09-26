@@ -1,10 +1,13 @@
 import uuid
 from crypt import methods
+import json
 
 from sanic import Blueprint
-from sanic.response import json
+from sanic.response import json, text, raw
 
 # from app.constants.cache_constants import CacheConstants
+from sanic_openapi.openapi2.doc import UUID
+
 from app.constants.cache_constants import CacheConstants
 from app.databases.mongodb import MongoDB
 # from app.databases.redis_cached import get_cache, set_cache
@@ -30,6 +33,11 @@ async def get_all_books(request):
     #         await set_cache(r, CacheConstants.all_books, books)
 
     book_objs = _db.get_books()
+
+    # query = {"_id": "a368b6ae-fb7c-48e7-a252-f1bd59decd1c"}
+    # book_obj = _db.get_book(query)
+    # find_book = [Book.to_dict(book_obj)]
+
     books = [book.to_dict() for book in book_objs]
     number_of_books = len(books)
     return json({
@@ -41,7 +49,7 @@ async def get_all_books(request):
 @books_bp.route('/', methods={'POST'})
 # @protected  # TODO: Authenticate
 @validate_with_jsonschema(create_book_json_schema)  # To validate request body
-async def add_book(request, username=None):
+async def create_book(request, username=None):
     body = request.json
 
     book_id = str(uuid.uuid4())
@@ -58,11 +66,13 @@ async def add_book(request, username=None):
     return json({'status': 'success'})
 
 
-# # TODO: write api get, update, delete book
-@books_bp.route('/{id}', methods={'GET'})
-async def get_book(request, username=None):
-    book = _db.get_book({"_id": str(request)}).to_dict()
-    return json(book)
+# TODO: write api get, update, delete book
+@books_bp.route("/<_id:uuid>", methods={'GET'})
+async def get_book(request, _id: UUID):
+    query = {"_id": "{}".format(_id)}
+    book_obj = _db.get_book(query)
+    # print(book_obj)
+    return json({'book': book_obj})
 
 
 # @books_bp.route('/{id}', methods={'PUT'})
@@ -85,21 +95,8 @@ async def get_book(request, username=None):
 #     return json({'status': 'success'})
 
 
-# @books_bp.route('/{id}', methods={'POST'})
-# # @protected  # TODO: Authenticate
-# # @validate_with_jsonschema(create_book_json_schema)  # To validate request body
-# async def delete_book(request, username=None):
-#     body = request.json
-#
-#     book_id = str(uuid.uuid4())
-#     book = Book(book_id).from_dict(body)
-#     book.owner = username
-#
-#     # # TODO: Delete book
-#     inserted = _db.delete_book(book)
-#     if not inserted:
-#         raise ApiInternalError('Fail to delete book')
-#
-#     # TODO: Update cache
-#
-#     return json({'status': 'success'})
+@books_bp.route('/<_id:uuid>', methods={'DELETE'})
+async def delete_book(request, _id: UUID):
+    query = {"_id": "{}".format(_id)}
+    book_obj = _db.delete_book(query)
+    return json({'status': 'success'})
