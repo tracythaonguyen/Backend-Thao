@@ -4,8 +4,10 @@ from sanic import Blueprint
 from sanic.response import json
 
 # from app.constants.cache_constants import CacheConstants
+from app.constants.cache_constants import CacheConstants
 from app.databases.mongodb import MongoDB
 # from app.databases.redis_cached import get_cache, set_cache
+from app.databases.redis_cached import get_cache, set_cache
 from app.decorators.json_validator import validate_with_jsonschema
 # from app.hooks.error import ApiInternalError
 from app.hooks.error import ApiInternalError
@@ -19,12 +21,12 @@ _db = MongoDB()
 @books_bp.route('/')
 async def get_all_books(request):
     # # TODO: use cache to optimize api
-    # async with request.app.ctx.redis as r:
-    #     books = await get_cache(r, CacheConstants.all_books)
-    #     if books is None:
-    #         book_objs = _db.get_books()
-    #         books = [book.to_dict() for book in book_objs]
-    #         await set_cache(r, CacheConstants.all_books, books)
+    async with request.app.ctx.redis as r:
+        books = await get_cache(r, CacheConstants.all_books)
+        if books is None:
+            book_objs = _db.get_books()
+            books = [book.to_dict() for book in book_objs]
+            await set_cache(r, CacheConstants.all_books, books)
 
     book_objs = _db.get_books()
     books = [book.to_dict() for book in book_objs]
