@@ -35,4 +35,4 @@ class MongoDBConfig:
     PASSWORD = os.environ.get("MONGO_PASSWORD") or "admin123"
     HOST = os.environ.get("MONGO_HOST") or "localhost"
     PORT = os.environ.get("MONGO_PORT") or "27017"
-    DATABASE = os.environ.get("MONGO_DATABASE") or "trainingBE"
+    DATABASE = os.environ.get("MONGO_DATABASE") or "example_db"

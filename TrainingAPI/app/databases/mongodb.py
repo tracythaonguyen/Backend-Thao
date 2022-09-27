@@ -17,7 +17,8 @@ class MongoDB:
         if connection_url is None:
             # connection_url = f'mongodb://{MongoDBConfig.USERNAME}:{MongoDBConfig.PASSWORD}@{MongoDBConfig.HOST}:{
             # MongoDBConfig.PORT}
-            connection_url = f'mongodb://admin:admin123@localhost:27017/?authMechanism=DEFAULT&authSource=trainingBE'
+            # connection_url = f'mongodb://admin:admin123@localhost:27017/?authMechanism=DEFAULT&authSource=trainingBE'
+            connection_url = f'mongodb://admin:admin123@localhost:27017/?authMechanism=DEFAULT&authSource=example_db'
         # self.connection_url = connection_url.split('@')[-1]
         try:
             self.client = pymongo.MongoClient(connection_url)
@@ -34,9 +35,7 @@ class MongoDB:
             if not filter_:
                 filter_ = {}
             cursor = self._books_col.find(filter_, projection=projection)
-            # query = {"_id": "a368b6ae-fb7c-48e7-a252-f1bd59decd1c"}
-            # book_obj = self._books_col.get_book(query)
-            # print(Book().from_dict(book_obj))
+
             data = []
             for doc in cursor:
                 data.append(Book().from_dict(doc))
@@ -64,7 +63,7 @@ class MongoDB:
 
     def update_book(self, filter_, update_operation):
         try:
-            updated_doc = self._books_col.update_one(filter_, update_operation)
+            updated_doc = self._books_col.update_one(filter_, {"$set": update_operation})
             return updated_doc
         except Exception as ex:
             logger.exception(ex)
