@@ -4,17 +4,13 @@ import json
 
 from sanic import Blueprint
 from sanic.response import json, text, raw
-
-# from app.constants.cache_constants import CacheConstants
 from sanic_openapi.openapi2.doc import UUID
-
 from app.constants.cache_constants import CacheConstants
 from app.databases.mongodb import MongoDB
-# from app.databases.redis_cached import get_cache, set_cache
 from app.databases.redis_cached import get_cache, set_cache
+from app.decorators.auth import protected
 from app.decorators.json_validator import validate_with_jsonschema
-# from app.hooks.error import ApiInternalError
-from app.hooks.error import ApiInternalError, ApiNotFound
+from app.hooks.error import ApiInternalError, ApiNotFound, ApiForbidden
 from app.models.book import create_book_json_schema, Book, update_book_json_schema
 
 books_bp = Blueprint('books_blueprint', url_prefix='/books')
@@ -42,7 +38,7 @@ async def get_all_books(request):
 
 
 @books_bp.route('/', methods={'POST'})
-# @protected  # TODO: Authenticate
+@protected  # TODO: Authenticate
 @validate_with_jsonschema(create_book_json_schema)  # To validate request body
 async def create_book(request, username=None):
     body = request.json
@@ -57,7 +53,7 @@ async def create_book(request, username=None):
         raise ApiInternalError('Fail to create book')
 
     query = {"_id": "{}".format(book_id)}
-    inserted = _db.get_book(query)
+    inserted_book = _db.get_book(query)
 
     # TODO: Update cache
     async with request.app.ctx.redis as r:
@@ -65,7 +61,7 @@ async def create_book(request, username=None):
         books = [book.to_dict() for book in book_objs]
         await set_cache(r, CacheConstants.all_books, books)
 
-    return json({'status': 'success'})
+    return json({'book': inserted_book})
 
 
 # TODO: write api get, update, delete book
@@ -81,13 +77,17 @@ async def get_book(request, _id: UUID):
 
 
 @books_bp.route('/<_id:uuid>', methods={'PUT'})
-# @protected  # TODO: Authenticate
+@protected  # TODO: Authenticate
 @validate_with_jsonschema(update_book_json_schema)  # To validate request body
-async def update_book(request, _id: UUID):
+async def update_book(request, _id: UUID, username=None):
     query = {"_id": "{}".format(_id)}
     book_obj = _db.get_book(query)
     if not book_obj:
         raise ApiNotFound('id {}'.format(_id))
+
+    book = Book().from_dict(book_obj)
+    if book.owner != username:
+        raise ApiForbidden('You are not owner of book')
 
     body = request.json
 
@@ -107,14 +107,21 @@ async def update_book(request, _id: UUID):
 
 
 @books_bp.route('/<_id:uuid>', methods={'DELETE'})
-async def delete_book(request, _id: UUID):
+@protected  # TODO: Authenticate
+async def delete_book(request, _id: UUID, username=None):
     query = {"_id": "{}".format(_id)}
     book_obj = _db.get_book(query)
 
     if not book_obj:
         raise ApiNotFound('id {}'.format(_id))
 
+    book = Book().from_dict(book_obj)
+    if book.owner != username:
+        raise ApiForbidden('You are not owner of book')
+
     book_obj = _db.delete_book(query)
+    if not book_obj:
+        raise ApiInternalError('Fail to delete book')
 
     # TODO: Update cache
     async with request.app.ctx.redis as r:

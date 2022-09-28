@@ -6,6 +6,7 @@ from pymongo.errors import ServerSelectionTimeoutError
 
 from app.constants.mongodb_constants import MongoCollections
 from app.models.book import Book
+from app.models.user import User
 from app.utils.logger_utils import get_logger
 from config import MongoDBConfig
 
@@ -29,6 +30,7 @@ class MongoDB:
 
         self.db = self.client[MongoDBConfig.DATABASE]
         self._books_col = self.db[MongoCollections.books]
+        self._users_col = self.db[MongoCollections.users]
 
     def get_books(self, filter_=None, projection=None):
         try:
@@ -76,3 +78,33 @@ class MongoDB:
         except Exception as ex:
             logger.exception(ex)
         return None
+
+    def get_all_users(self, filter_=None, projection=None):
+        try:
+            if not filter_:
+                filter_ = {}
+            cursor = self._users_col.find(filter_, projection=projection)
+
+            data = []
+            for doc in cursor:
+                data.append(User().from_dict(doc))
+            return data
+        except Exception as ex:
+            logger.exception(ex)
+        return []
+
+    def register_user(self, user: User):
+        try:
+            inserted_doc = self._users_col.insert_one(user.to_dict())
+            return inserted_doc
+        except Exception as ex:
+            logger.exception(ex)
+        return None
+
+    def get_user(self, filter_):
+        try:
+            got_doc = self._users_col.find_one(filter_)
+            return got_doc
+        except Exception as ex:
+            logger.exception(ex)
+        return []
