@@ -61,7 +61,7 @@ class MongoDB:
             return got_doc
         except Exception as ex:
             logger.exception(ex)
-        return []
+        return None
 
     def update_book(self, filter_, update_operation):
         try:
@@ -69,7 +69,7 @@ class MongoDB:
             return updated_doc
         except Exception as ex:
             logger.exception(ex)
-        return []
+        return None
 
     def delete_book(self, filter_):
         try:
@@ -107,4 +107,20 @@ class MongoDB:
             return got_doc
         except Exception as ex:
             logger.exception(ex)
-        return []
+        return None
+
+    def update_user(self, filter_, update_operation):
+        try:
+            updated_doc = self._users_col.update_one(filter_, {"$set": update_operation})
+            return updated_doc
+        except Exception as ex:
+            logger.exception(ex)
+        return None
+
+    def delete_user(self, filter_):
+        try:
+            got_doc = self._users_col.delete_one(filter_)
+            return got_doc
+        except Exception as ex:
+            logger.exception(ex)
+        return None

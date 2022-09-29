@@ -40,7 +40,7 @@ async def register_user(request):
     query = {"username": user_name}
     user = _db.get_user(query)
     if user:
-        return json({'status': 'User has exited. Failed to register'})
+        raise ApiBadRequest('User exited')
 
     user_id = str(user_name)
     # user_password = str(bcrypt.hashpw(pass_word.encode('utf-8'), bcrypt.gensalt()))
@@ -52,7 +52,7 @@ async def register_user(request):
     return json({'status': 'success'})
 
 
-@users_bp.route("/login", methods=["POST", "GET"])
+@users_bp.route("/login", methods={"POST"})
 @validate_with_jsonschema(user_json_schema)
 async def user_login(request):
     body = request.json
@@ -60,10 +60,9 @@ async def user_login(request):
     pass_word = body.get("password")
     # user_password = str(bcrypt.hashpw(pass_word.encode('utf-8'), bcrypt.gensalt()))
     user_password = str(hashlib.sha256(pass_word.encode()).hexdigest())
+    query = {"username": user_name, "password": user_password}
 
     if (user_name is not None) and (pass_word is not None):
-        query = {"username": user_name, "password": user_password}
-        # query = {"username": user_name}
         user = _db.get_user(query)
         if not user:
             raise ApiNotFound("User does not exist or incorrect information")
@@ -71,10 +70,13 @@ async def user_login(request):
         raise ApiBadRequest("Bad request")
 
     token_jwt = generate_jwt(user_name)
+    _db.update_user({"username": user_name}, {"$set": {"token": str(token_jwt)}})
+    user = _db.get_user(query)
 
     return json({
         'status': "Login success",
-        'token': token_jwt
+        'token': token_jwt,
+        'user': user
     })
 
 
