@@ -122,11 +122,7 @@ class BooksTests(unittest.TestCase):
             "title": "Test"
         })
 
-        # GET id of book
-        # book = _db.get_book({})
-        # book_id = book.get("_id")
-
-        book_id = "16e62f8d-1ca0-4895-a8a4-7e862fa1142d"
+        book_id = "c6325c66-f467-4c9d-9119-ea7e7c4ab8dd"
 
         request_user, response_user = app.test_client.post('/users/login', data=user)
         data = json.loads(response_user.text)
@@ -146,10 +142,7 @@ class BooksTests(unittest.TestCase):
             "title": "Test"
         })
 
-        # GET id of book
-        # book = _db.get_book({})
-        # book_id = book.get("_id")
-        book_id = "16e62f8d-1ca0-4895-a8a4-7e862fa1142d"
+        book_id = "c6325c66-f467-4c9d-9119-ea7e7c4ab8dd"
 
         request_user, response_user = app.test_client.post('/users/login', data=user)
         data = json.loads(response_user.text)
@@ -160,86 +153,65 @@ class BooksTests(unittest.TestCase):
         data_response = json.loads(response.text)
         self.assertIsInstance(data_response.get('book'), object)
 
-    # def test_delete_book_no_login(self):
-    #     book = _db.get_book({})
-    #     book_id = book.get("_id")
-    #     headers = {'Authorization': ''}
-    #     request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
-    #     self.assertEqual(response.status, 401)
-    #     self.assertEqual(json.loads(response.text).get('message'), "Unauthorized: You are unauthorized.")
+    def test_delete_book_no_login(self):
+        book = _db.get_book({})
+        book_id = book.get("_id")
+        headers = {'Authorization': ''}
+        request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
+        self.assertEqual(response.status, 401)
+        # self.assertEqual(json.loads(response.text).get('message'), "Unauthorized: You are unauthorized.")
 
-    # def test_delete_book_wrong_id(self):
-    #     user = json.dumps({
-    #         "username": "thao",
-    #         "password": "123"
-    #     })
-    #     book_id = 0
-    #
-    #     request_user, response_user = app.test_client.post('/users/login', data=user)
-    #     data = json.loads(response_user.text)
-    #     token = data.get('token')
-    #     headers = {'Authorization': token}
-    #     request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
-    #     self.assertEqual(response.status, 404)
-    #     # self.assertEqual(json.loads(response.text).get('message'), "Not Found: ")
+    def test_delete_book_wrong_id(self):
+        user = json.dumps({
+            "username": "thao",
+            "password": "123"
+        })
+        book_id = 0
 
-    # def test_delete_book_id(self):
-    #     user = json.dumps({
-    #         "username": "thao",
-    #         "password": "123"
-    #     })
-    #     book = _db.get_book({})
-    #     book_id = book.get("_id")
-    #
-    #     request_user, response_user = app.test_client.post('/users/login', data=user)
-    #     data = json.loads(response_user.text)
-    #     token = data.get('token')
-    #     headers = {'Authorization': token}
-    #     request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
-    #     self.assertEqual(response.status, 200)
-    #     data_response = json.loads(response.text)
-    #     self.assertIsInstance(data_response.get('book'), object)
+        request_user, response_user = app.test_client.post('/users/login', data=user)
+        data = json.loads(response_user.text)
+        token = data.get('token')
+        headers = {'Authorization': token}
+        request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
+        self.assertEqual(response.status, 404)
+        # self.assertEqual(json.loads(response.text).get('message'), "Not Found: ")
 
     # need check the owner
-    # def test_delete_book_id_no_owner(self):
-    #     user = json.dumps({
-    #         "username": "test",
-    #         "password": "123"
-    #     })
-    #
-    #     # GET id of book
-    #     # book = _db.get_book({})
-    #     # book_id = book.get("_id")
-    #
-    #     book_id = "16e62f8d-1ca0-4895-a8a4-7e862fa1142d"
-    #
-    #     request_user, response_user = app.test_client.post('/users/login', data=user)
-    #     data = json.loads(response_user.text)
-    #     token = data.get('token')
-    #     headers = {'Authorization': token}
-    #     request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
-    #     self.assertEqual(response.status, 403)
-    #     self.assertEqual(json.loads(response.text).get('message'), "Forbidden: You are not owner of book")
+    def test_delete_book_id_no_owner(self):
+        user = json.dumps({
+            "username": "test",
+            "password": "123"
+        })
+
+        book_id = "38ceec55-d693-44d4-b2f2-b1de7210f663"
+
+        request_user, response_user = app.test_client.post('/users/login', data=user)
+        data = json.loads(response_user.text)
+        token = data.get('token')
+        headers = {'Authorization': token}
+        request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
+        self.assertEqual(response.status, 403)
+        # self.assertEqual(json.loads(response.text).get('message'), "Forbidden: You are not owner of book")
 
     # need check the owner
-    # def test_delete_book_id_owner(self):
-    #     user = json.dumps({
-    #         "username": "thao",
-    #         "password": "123"
-    #     })
-    #     # GET id of book
-    #     # book = _db.get_book({})
-    #     # book_id = book.get("_id")
-    #     book_id = "16e62f8d-1ca0-4895-a8a4-7e862fa1142d"
-    #
-    #     request_user, response_user = app.test_client.post('/users/login', data=user)
-    #     data = json.loads(response_user.text)
-    #     token = data.get('token')
-    #     headers = {'Authorization': token}
-    #     request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
-    #     self.assertEqual(response.status, 200)
-    #     data_response = json.loads(response.text)
-    #     self.assertIsInstance(data_response.get('book'), object)
+    def test_delete_book_id_owner(self):
+        user = json.dumps({
+            "username": "thao",
+            "password": "123"
+        })
+        # GET id of book
+        # book = _db.get_book({})
+        # book_id = book.get("_id")
+        book_id = "38ceec55-d693-44d4-b2f2-b1de7210f663"
+
+        request_user, response_user = app.test_client.post('/users/login', data=user)
+        data = json.loads(response_user.text)
+        token = data.get('token')
+        headers = {'Authorization': token}
+        request, response = app.test_client.delete('/books/{}'.format(book_id), headers=headers)
+        self.assertEqual(response.status, 200)
+        data_response = json.loads(response.text)
+        self.assertIsInstance(data_response.get('book'), object)
 
 
 if __name__ == '__main__':
